@@ -28,6 +28,7 @@ body {
     height: 30px;
     background: red;
     border-radius: 50%;
-    top: 50%;
+    top: 370px; /* 400px container - 30px ball height */
     left: 100px;
 }
+
