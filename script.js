@@ -5,19 +5,21 @@ document.addEventListener("DOMContentLoaded", function () {
     let velocityY = 0;
     let ballY = 200;
     let screenSpeed = 2;
-    let stuck = false;
     const obstacles = [];
-
+    let stuck = false;
+    
     const ballX = 400;
-    ball.style.left = ballX + "px";
-
+    let ballCurrentX = ballX;
+    
+    const verticalThreshold = 5; // Tolerance for vertical collisions
+    
     document.addEventListener("keydown", function (event) {
         if (event.code === "Space") {
             gravity = -gravity;
-            stuck = false;
+            stuck = false; // Allow the ball to escape side collisions
         }
     });
-
+    
     function createObstacle() {
         const obstacle = document.createElement("div");
         obstacle.classList.add("obstacle");
@@ -37,6 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     function updateGame() {
+        // Update vertical movement
         velocityY += gravity;
         ballY += velocityY;
     
@@ -45,52 +48,61 @@ document.addEventListener("DOMContentLoaded", function () {
             ballY = floorY;
             velocityY = 0;
         }
-    
         if (ballY <= 0) {
             ballY = 0;
             velocityY = 0;
         }
     
         let ballRect = ball.getBoundingClientRect();
+        stuck = false;
+    
         obstacles.forEach((obstacle) => {
             let obstacleRect = obstacle.getBoundingClientRect();
     
+            // Check for any collision overlap
             if (
                 ballRect.left < obstacleRect.right &&
                 ballRect.right > obstacleRect.left &&
                 ballRect.top < obstacleRect.bottom &&
                 ballRect.bottom > obstacleRect.top
             ) {
-                if (gravity > 0 && ballRect.bottom > obstacleRect.top) {
+                // Calculate vertical differences
+                let diffTop = Math.abs(ballRect.bottom - obstacleRect.top);
+                let diffBottom = Math.abs(ballRect.top - obstacleRect.bottom);
+    
+                // If falling (gravity > 0) and nearly touching the top of the obstacle:
+                if (gravity > 0 && diffTop < verticalThreshold) {
                     ballY = obstacleRect.top - ballRect.height;
                     velocityY = 0;
                 }
-                if (gravity < 0 && ballRect.top < obstacleRect.bottom) {
+                // If rising (gravity < 0) and nearly touching the bottom of the obstacle:
+                else if (gravity < 0 && diffBottom < verticalThreshold) {
                     ballY = obstacleRect.bottom;
                     velocityY = 0;
                 }
-                
-                // Ensure ball can roll off naturally when on top of an obstacle
-                if (
-                    (gravity > 0 && ballY === obstacleRect.top - ballRect.height) ||
-                    (gravity < 0 && ballY === obstacleRect.bottom)
-                ) {
-                    stuck = false;
-                    velocityY += gravity;
-                }
-                
-                // Prevent passing through obstacles from the sides
-                if (
-                    ballRect.right > obstacleRect.left && ballRect.left < obstacleRect.right &&
-                    !(ballRect.bottom === obstacleRect.top || ballRect.top === obstacleRect.bottom)
-                ) {
-                    ball.style.left = obstacleRect.left - ballRect.width + "px";
+                // Otherwise, treat as a side collision:
+                else {
                     stuck = true;
+                    // Lock ball to the left side of the obstacle
+                    ballCurrentX = obstacleRect.left - ballRect.width;
                 }
             }
         });
     
-        if (parseInt(ball.style.left) <= 0) {
+        // If stuck, ball is pushed left with the obstacle
+        if (stuck) {
+            ballCurrentX -= screenSpeed;
+        }
+        // If not stuck, gradually return to the center if off-center
+        else if (ballCurrentX < ballX) {
+            ballCurrentX += 2; // Adjust return speed as needed
+            if (ballCurrentX > ballX) ballCurrentX = ballX;
+        }
+    
+        ball.style.left = ballCurrentX + "px";
+    
+        // If the ball is pushed off-screen, game over
+        if (ballCurrentX <= 0) {
             alert("Game Over! You got stuck behind an obstacle.");
             location.reload();
         }
@@ -101,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let obstacleX = parseInt(obstacle.style.left) - screenSpeed;
             obstacle.style.left = obstacleX + "px";
     
-            if (obstacleX < -100) {
+            if (obstacleX < -150) {
                 gameContainer.removeChild(obstacle);
                 obstacles.splice(index, 1);
             }
@@ -113,11 +125,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     updateGame();
-
+    
     setInterval(() => {
-        if (Math.random() < 0.2) {
+        if (Math.random() < 0.3) {
             createObstacle();
         }
     }, 1000);
 });
-  
