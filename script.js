@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener("keydown", function (event) {
         if (event.code === "Space") {
             gravity = -gravity;
+            stuck = false; // Allow movement when gravity is toggled
         }
     });
 
@@ -21,14 +22,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const obstacle = document.createElement("div");
         obstacle.classList.add("obstacle");
     
-        // Bigger obstacles
         let width = Math.random() * 80 + 50;  // Between 50px and 130px
         let height = Math.random() * 80 + 50; // Between 50px and 130px
     
         obstacle.style.width = width + "px";
         obstacle.style.height = height + "px";
     
-        // Randomly place on floor or ceiling
         const isCeiling = Math.random() < 0.5; 
         obstacle.style.top = isCeiling ? "0px" : `${400 - height}px`; // Ceiling or floor
         obstacle.style.left = "800px"; // Start off the right side
@@ -37,12 +36,6 @@ document.addEventListener("DOMContentLoaded", function () {
         obstacles.push(obstacle);
     }
     
-    // Increase spawn rate
-    if (Math.random() < 0.05) { // More frequent obstacles
-        createObstacle();
-    }
-    
-
     function updateGame() {
         if (!stuck) {
             velocityY += gravity;
@@ -50,41 +43,73 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             ball.style.left = parseInt(ball.style.left) - screenSpeed + "px";
         }
-
+    
         const floorY = 400 - 34;
         if (ballY >= floorY) {
             ballY = floorY;
             velocityY = 0;
         }
-
+    
         if (ballY <= 0) {
             ballY = 0;
             velocityY = 0;
         }
-
+    
+        let ballRect = ball.getBoundingClientRect();
+        obstacles.forEach((obstacle) => {
+            let obstacleRect = obstacle.getBoundingClientRect();
+    
+            if (
+                ballRect.left < obstacleRect.right &&
+                ballRect.right > obstacleRect.left &&
+                ballRect.top < obstacleRect.bottom &&
+                ballRect.bottom > obstacleRect.top
+            ) {
+                if (gravity > 0 && ballRect.bottom > obstacleRect.top) {
+                    ballY = obstacleRect.top - ballRect.height; 
+                    velocityY = 0;
+                }
+                if (gravity < 0 && ballRect.top < obstacleRect.bottom) {
+                    ballY = obstacleRect.bottom; 
+                    velocityY = 0;
+                }
+                
+                // Prevent moving through obstacles
+                if (ballRect.right > obstacleRect.left) {
+                    ball.style.left = obstacleRect.left - ballRect.width + "px";
+                    stuck = true;
+                }
+            }
+        });
+    
+        // If ball is stuck and reaches the left edge, trigger Game Over
+        if (parseInt(ball.style.left) <= 0) {
+            alert("Game Over! You got stuck behind an obstacle.");
+            location.reload();
+        }
+    
         ball.style.top = ballY + "px";
-
-        // Move obstacles left
+    
         obstacles.forEach((obstacle, index) => {
             let obstacleX = parseInt(obstacle.style.left) - screenSpeed;
             obstacle.style.left = obstacleX + "px";
-
-            // Remove obstacle if off-screen
+    
             if (obstacleX < -100) {
                 gameContainer.removeChild(obstacle);
                 obstacles.splice(index, 1);
             }
         });
-
-        // Spawn obstacles at intervals
-        if (Math.random() < 0.02) { // Small chance per frame to spawn
-            createObstacle();
-        }
-
+    
         screenSpeed += 0.0005;
-
+    
         requestAnimationFrame(updateGame);
     }
-
+    
     updateGame();
+
+    setInterval(() => {
+        if (Math.random() < 0.05) {
+            createObstacle();
+        }
+    }, 1000);
 });
