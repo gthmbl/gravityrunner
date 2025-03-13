@@ -1,50 +1,86 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const gameContainer = document.getElementById("game-container");
     const ball = document.getElementById("ball");
-    let gravity = 2; // Controls gravity direction (down = positive, up = negative)
+    let gravity = 2;
     let velocityY = 0;
     let ballY = 200;
-    let screenSpeed = 2; // How fast the screen moves left
-    let stuck = false; // Tracks if the ball is stuck behind an obstacle
+    let screenSpeed = 2;
+    let stuck = false;
+    const obstacles = [];
 
-    // Set the ball's X position to the middle of the screen
-    const ballX = 400; // Half of 800px game container
+    const ballX = 400;
     ball.style.left = ballX + "px";
 
-    // Toggle gravity on Space Bar
     document.addEventListener("keydown", function (event) {
         if (event.code === "Space") {
-            gravity = -gravity; // Reverse gravity
+            gravity = -gravity;
         }
     });
 
+    function createObstacle() {
+        const obstacle = document.createElement("div");
+        obstacle.classList.add("obstacle");
+    
+        // Bigger obstacles
+        let width = Math.random() * 80 + 50;  // Between 50px and 130px
+        let height = Math.random() * 80 + 50; // Between 50px and 130px
+    
+        obstacle.style.width = width + "px";
+        obstacle.style.height = height + "px";
+    
+        // Randomly place on floor or ceiling
+        const isCeiling = Math.random() < 0.5; 
+        obstacle.style.top = isCeiling ? "0px" : `${400 - height}px`; // Ceiling or floor
+        obstacle.style.left = "800px"; // Start off the right side
+    
+        gameContainer.appendChild(obstacle);
+        obstacles.push(obstacle);
+    }
+    
+    // Increase spawn rate
+    if (Math.random() < 0.05) { // More frequent obstacles
+        createObstacle();
+    }
+    
+
     function updateGame() {
         if (!stuck) {
-            // Apply gravity
             velocityY += gravity;
             ballY += velocityY;
         } else {
-            // If stuck, move left with screen speed
             ball.style.left = parseInt(ball.style.left) - screenSpeed + "px";
         }
 
-        // Ensure ball stays within screen bounds
-        const floorY = 400 - 34; // Floor position (container height - ball height)
+        const floorY = 400 - 34;
         if (ballY >= floorY) {
-            ballY = floorY;  // Ensures ball bottom sits exactly on the white line
-            velocityY = 0;
-        }
-        
-        
-        const ceilingY = 0; // Ceiling position (for when gravity is reversed)
-        if (ballY <= ceilingY) {
-            ballY = ceilingY;
+            ballY = floorY;
             velocityY = 0;
         }
 
-        // Update ball position
+        if (ballY <= 0) {
+            ballY = 0;
+            velocityY = 0;
+        }
+
         ball.style.top = ballY + "px";
 
-        // Increase screen speed over time
+        // Move obstacles left
+        obstacles.forEach((obstacle, index) => {
+            let obstacleX = parseInt(obstacle.style.left) - screenSpeed;
+            obstacle.style.left = obstacleX + "px";
+
+            // Remove obstacle if off-screen
+            if (obstacleX < -100) {
+                gameContainer.removeChild(obstacle);
+                obstacles.splice(index, 1);
+            }
+        });
+
+        // Spawn obstacles at intervals
+        if (Math.random() < 0.02) { // Small chance per frame to spawn
+            createObstacle();
+        }
+
         screenSpeed += 0.0005;
 
         requestAnimationFrame(updateGame);
