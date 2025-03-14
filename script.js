@@ -138,4 +138,11 @@ document.addEventListener("DOMContentLoaded", function () {
             createObstacle();
         }
     }, 1000);
+    
+    // Increase obstacle speed every 10 seconds
+    setInterval(() => {
+        screenSpeed += 0.5; // Increase speed gradually per level
+        console.log("New Level! Speed increased to:", screenSpeed);
+    }, 10000);
 });
+
