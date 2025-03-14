@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let obstacleFrequency = 0.3; // Initial obstacle spawn probability
     const obstacles = [];
     let stuck = false;
+    let gamePaused = false;
     
     const ballX = 400;
     let ballCurrentX = ballX;
@@ -19,6 +20,12 @@ document.addEventListener("DOMContentLoaded", function () {
             gravity = -gravity;
             stuck = false; // Allow the ball to escape side collisions
         }
+        if (event.code === "KeyP") {
+            gamePaused = !gamePaused; // Toggle pause
+        }
+        if (event.code === "KeyR") {
+            location.reload(); // Restart game
+        }
     });
     
     function createObstacle() {
@@ -26,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
         obstacle.classList.add("obstacle");
     
         let width = Math.random() * 80 + 50;
-        let height = Math.random() * 80 + 100;
+        let height = Math.random() * 80 + 50;
     
         obstacle.style.width = width + "px";
         obstacle.style.height = height + "px";
@@ -40,6 +47,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     function updateGame() {
+        if (gamePaused) {
+            requestAnimationFrame(updateGame);
+            return;
+        }
+    
         // Update vertical movement
         velocityY += gravity;
         ballY += velocityY;
@@ -94,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
         // If rolling on top or bottom of an obstacle, move right with the obstacle instead of left
         if (rolling) {
-            ballCurrentX += screenSpeed; // Ball stays aligned with moving obstacle
+            ballCurrentX -= screenSpeed; // Ball stays aligned with moving obstacle
         }
     
         // If stuck, ball is pushed left with the obstacle

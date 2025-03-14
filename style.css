@@ -39,3 +39,15 @@ body {
     background: black;
 }
  
+#controls {
+    font: 100;
+    color: white;
+    margin-top: 500px;
+    position: fixed;
+}
+
+#title {
+    color: white;
+    position: fixed;
+    margin-bottom: 500px;
+}
