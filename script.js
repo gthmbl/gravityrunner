@@ -24,8 +24,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const obstacle = document.createElement("div");
         obstacle.classList.add("obstacle");
     
-        let width = Math.random() * 80 + 50;
-        let height = Math.random() * 80 + 50;
+        let width = Math.random() * 80 + 30;
+        let height = Math.random() * 80 + 100;
     
         obstacle.style.width = width + "px";
         obstacle.style.height = height + "px";
@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
         let ballRect = ball.getBoundingClientRect();
         stuck = false;
+        let rolling = false;
     
         obstacles.forEach((obstacle) => {
             let obstacleRect = obstacle.getBoundingClientRect();
@@ -74,20 +75,26 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (gravity > 0 && diffTop < verticalThreshold) {
                     ballY = obstacleRect.top - ballRect.height;
                     velocityY = 0;
+                    rolling = true;
                 }
                 // If rising (gravity < 0) and nearly touching the bottom of the obstacle:
                 else if (gravity < 0 && diffBottom < verticalThreshold) {
                     ballY = obstacleRect.bottom;
                     velocityY = 0;
+                    rolling = true;
                 }
                 // Otherwise, treat as a side collision:
                 else {
                     stuck = true;
-                    // Lock ball to the left side of the obstacle
                     ballCurrentX = obstacleRect.left - ballRect.width;
                 }
             }
         });
+    
+        // If rolling on top or bottom of an obstacle, move right with the obstacle instead of left
+        if (rolling) {
+            ballCurrentX -= screenSpeed; // Ball stays aligned with moving obstacle
+        }
     
         // If stuck, ball is pushed left with the obstacle
         if (stuck) {
