@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     function updateGame() {
         if (gamePaused) {
-            requestAnimationFrame(updateGame);
+            if (!gamePaused) requestAnimationFrame(updateGame);
             return;
         }
     
@@ -123,8 +123,25 @@ document.addEventListener("DOMContentLoaded", function () {
     
         // If the ball is pushed off-screen, game over
         if (ballCurrentX <= 0) {
-            alert("Game Over! You got stuck behind an obstacle.");
-            location.reload();
+            const gameOverMessage = document.createElement("div");
+            gameOverMessage.innerText = "GAME OVER\n  Press 'R' to try again";                                            
+            gameOverMessage.style.position = "absolute";
+            gameOverMessage.style.top = "50%";
+            gameOverMessage.style.left = "50%";
+            gameOverMessage.style.transform = "translate(-50%, -50%)";
+            gameOverMessage.style.color = "white";
+            gameOverMessage.style.fontSize = "24px";
+            gameOverMessage.style.background = "rgba(0, 0, 0, 0.7)";
+            gameOverMessage.style.padding = "20px";
+            gameOverMessage.style.borderRadius = "10px";
+            gameOverMessage.style.textAlign = "center";
+            gameContainer.appendChild(gameOverMessage);
+            gamePaused = true; // Pause the game to prevent further updates
+            document.addEventListener("keydown", function (event) {
+                if (event.code === "KeyR") {
+                    location.reload();
+                }
+            }, { once: true });
         }
     
         ball.style.top = ballY + "px";
