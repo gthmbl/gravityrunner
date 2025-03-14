@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let velocityY = 0;
     let ballY = 200;
     let screenSpeed = 2;
+    let obstacleFrequency = 0.3; // Initial obstacle spawn probability
     const obstacles = [];
     let stuck = false;
     
@@ -24,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const obstacle = document.createElement("div");
         obstacle.classList.add("obstacle");
     
-        let width = Math.random() * 80 + 30;
+        let width = Math.random() * 80 + 50;
         let height = Math.random() * 80 + 100;
     
         obstacle.style.width = width + "px";
@@ -93,7 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
         // If rolling on top or bottom of an obstacle, move right with the obstacle instead of left
         if (rolling) {
-            ballCurrentX -= screenSpeed; // Ball stays aligned with moving obstacle
+            ballCurrentX += screenSpeed; // Ball stays aligned with moving obstacle
         }
     
         // If stuck, ball is pushed left with the obstacle
@@ -134,15 +135,15 @@ document.addEventListener("DOMContentLoaded", function () {
     updateGame();
     
     setInterval(() => {
-        if (Math.random() < 0.3) {
+        if (Math.random() < obstacleFrequency) {
             createObstacle();
         }
     }, 1000);
     
-    // Increase obstacle speed every 10 seconds
+    // Increase obstacle speed and spawn rate every 10 seconds
     setInterval(() => {
         screenSpeed += 0.5; // Increase speed gradually per level
-        console.log("New Level! Speed increased to:", screenSpeed);
+        obstacleFrequency = Math.min(obstacleFrequency + 0.2, 1.0); // Cap frequency at 1.0
+        console.log("New Level! Speed increased to:", screenSpeed, "Obstacle Frequency:", obstacleFrequency);
     }, 10000);
 });
-
