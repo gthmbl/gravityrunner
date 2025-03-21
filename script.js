@@ -14,6 +14,21 @@ document.addEventListener("DOMContentLoaded", function () {
     let ballCurrentX = ballX; //tracks the balls current position 
     
     const verticalThreshold = 5; // checks if the ball is just barely touching the top or bottom of an obstacle by 5 pixels
+
+    let level = 1; // Start at level 1
+    let gameOver = false;
+    
+    // Create a corner display to show the current level
+    const levelDisplay = document.createElement("div");
+    levelDisplay.style.position = "absolute";
+    levelDisplay.style.top = "10px";
+    levelDisplay.style.left = "10px";
+    levelDisplay.style.color = "white";
+    levelDisplay.style.fontFamily = "Arial, sans-serif";
+    levelDisplay.style.fontSize = "16px";
+    levelDisplay.style.zIndex="9999";
+    levelDisplay.innerText = "Level: " + level;
+    gameContainer.appendChild(levelDisplay);
     
     document.addEventListener("keydown", function (event) { //checks for keys pressed by user
         if (event.code === "Space") {
@@ -21,7 +36,9 @@ document.addEventListener("DOMContentLoaded", function () {
             stuck = false; // prevents ball from being glued to the side of an obstacle when gravity is reversed 
         }
         if (event.code === "KeyP") {
+            if (!gameOver) {
             gamePaused = !gamePaused; // Toggle pause
+            }
         }
         if (event.code === "KeyR") {
             location.reload(); // Restart game
@@ -52,8 +69,8 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // before doing anything check if the game is paused
     function updateGame() {
-        if (gamePaused) {
-            if (!gamePaused) requestAnimationFrame(updateGame);
+        if (gamePaused || gameOver) {
+            requestAnimationFrame(updateGame);
             return;
         }
     
@@ -130,6 +147,9 @@ document.addEventListener("DOMContentLoaded", function () {
     
         // If the ball’s left edge is at or past the left boundary (x <= 0), we consider that “off-screen” → game over.
         if (ballCurrentX <= 0) {
+            gameOver = true;
+            gamePaused = true; 
+
             const gameOverMessage = document.createElement("div"); //Create gameover message as a new <div> with styling
             gameOverMessage.innerText = "GAME OVER\n  Press 'R' to try again";                                       
             gameOverMessage.style.position = "absolute";
@@ -183,8 +203,14 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Increase obstacle speed and spawn rate every 10 seconds
     setInterval(() => {
+        if (gamePaused || gameOver) return;
+
         screenSpeed += 0.5; // Increase speed gradually per level
         obstacleFrequency = Math.min(obstacleFrequency + 0.2, 1.0); // increase the frequency of obstacles by 0.2, but exceeed 10 
+
+        level++;
+        levelDisplay.innerText = "Level: " + level;
+
         console.log("New Level! Speed increased to:", screenSpeed, "Obstacle Frequency:", obstacleFrequency); //logs message in console with spawn rate and new speed
     }, 10000);
 });
