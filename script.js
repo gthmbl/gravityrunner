@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     const gameContainer = document.getElementById("game-container");
     const ball = document.getElementById("ball");
-    let gravity = 2; //controls vertical pull on ball. positive value pulls ball down, negative pulls upward
+    let gravity = 0.75; //controls vertical pull on ball. positive value pulls ball down, negative pulls upward
     let velocityY = 0; //vertical speed of ball, added with gravity creates acceleration 
     let ballY = 200; //vertical position of the ball begins at 200px from top 
     let screenSpeed = 2; //speed at which obstacles moves left across the screen 
@@ -49,9 +49,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const obstacle = document.createElement("div");
         obstacle.classList.add("obstacle");
     
-        //randomly set obstacle's height and width between 50 and 130 pixels 
+        //randomly set obstacle's height and width  
         let width = Math.random() * 80 + 50;
-        let height = Math.random() * 80 + 50;
+        let height = Math.random() * 80 + 100;
         
         //assigns the random dimension values to the CSS styling 
         obstacle.style.width = width + "px";
@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (stuck) {
             ballCurrentX -= screenSpeed;
         }
-        //if not stuck, the ball tries to move back toward its ideal position ballX (e.g., if it got pushed left, it slides back toward the middle).
+        //if not stuck, the ball tries to move back toward its neutral position ballX 
         else if (ballCurrentX < ballX) {
             ballCurrentX += 2; // Adjust return speed as needed
             if (ballCurrentX > ballX) ballCurrentX = ballX;
@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
             gameOver = true;
             gamePaused = true; 
 
-            const gameOverMessage = document.createElement("div"); //Create gameover message as a new <div> with styling
+            const gameOverMessage = document.createElement("div"); //Create gameover message as a new <div> 
             gameOverMessage.innerText = "GAME OVER\n  Press 'R' to try again";                                       
             gameOverMessage.style.position = "absolute";
             gameOverMessage.style.top = "50%";
