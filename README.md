@@ -1,3 +1,7 @@
+---------------
+GRAVITY RUNNER
+---------------
+
 Please zoom in 200% before playing (command +) 
 
 Controls:
